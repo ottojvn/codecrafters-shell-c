@@ -8,7 +8,9 @@ int main(int argc, char *argv[]) {
 
   printf("$ ");
   char command[command_size];
-  fgets(command, command_size, stdin);
+  constexpr int len = fgets(command, command_size, stdin);
+  command[len] = '\0';
+
   printf("%s: command not found\n", command);
 
   return 0;
