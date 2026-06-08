@@ -1,13 +1,26 @@
 #include <stdio.h>
 #include <string.h>
 
-enum tokenizer_state { NORMAL = 0, SIMPLE_QUOTE, DOUBLE_QUOTE, BACKSLASH };
-enum command_type { BUILTIN_EXIT, BUILTIN_ECHO, BUILTIN_TYPE, EXECUTABLE, UNKNOWN };
+enum tokenizer_state { STATE_NORMAL = 0, STATE_SIMPLE_QUOTE, STATE_DOUBLE_QUOTE, STATE_BACKSLASH };
+enum command_type {
+    CMD_BUILTIN_EXIT,
+    CMD_BUILTIN_ECHO,
+    CMD_BUILTIN_TYPE,
+    CMD_EXECUTABLE,
+    CMD_UNKNOWN
+};
 
-bool in_path(const char *cmd);
-const char *tokenize(char *command);
-enum command_type get_cmd_type(const char *cmd);
-int handle_command(char *command);
+struct builtin_map {
+    const char *cmd;
+    enum command_type type;
+};
+
+static bool in_path(const char *cmd);
+static const char *tokenize(char *command);
+static enum command_type get_cmd_type(const char *cmd);
+static int handle_command(char *command);
+static int echo(const char *arg);
+static void type(const char *arg);
 
 int main(int argc, char *argv[]) {
     // Flush after every printf
@@ -15,12 +28,14 @@ int main(int argc, char *argv[]) {
 
     while (true) {
         printf("$ ");
-        char command[BUFSIZ];
-        fgets(command, BUFSIZ, stdin);
-        strtok(command, "\n");
+        char input_line[BUFSIZ];
+        if (fgets(input_line, BUFSIZ, stdin) == NULL) {
+            break;
+        }
+        input_line[strcspn(input_line, "\n")] = '\0';
         int ret;
-        if ((ret = handle_command(command)) == -1) {
-            printf("%s: command not found\n", command);
+        if ((ret = handle_command(input_line)) == -1) {
+            printf("%s: command not found\n", input_line);
         } else if (ret == 1) {
             break;
         }
@@ -29,53 +44,27 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-int handle_command(char *command) {
+static int handle_command(char *command) {
     const char *token;
     if ((token = tokenize(command)) == nullptr) {
         return 0;
     }
     switch (get_cmd_type(token)) {
-    case BUILTIN_EXIT:
+    case CMD_BUILTIN_EXIT:
         return 1;
-    case BUILTIN_ECHO:
-        if ((token = tokenize(nullptr)) == nullptr) {
-            printf("\n");
-            return 0;
-        }
-        printf("%s", token);
-        while ((token = tokenize(nullptr)) != nullptr) {
-            printf(" %s", token);
-        }
-        printf("\n");
+    case CMD_BUILTIN_ECHO:
+        return echo(token);
+    case CMD_BUILTIN_TYPE:
+        return type(token);
+    case CMD_EXECUTABLE:
         return 0;
-    case BUILTIN_TYPE:
-        while ((token = tokenize(nullptr)) != nullptr) {
-            const char *message;
-            switch (get_cmd_type(token)) {
-            case BUILTIN_EXIT:
-            case BUILTIN_ECHO:
-            case BUILTIN_TYPE:
-                message = " is a shell builtin";
-                break;
-            case EXECUTABLE:
-                message = " is an executable file";
-                break;
-            case UNKNOWN:
-                message = ": not found";
-                break;
-            }
-
-            printf("%s%s\n", token, message);
-        }
-    case EXECUTABLE:
-        return 0;
-    case UNKNOWN:
+    case CMD_UNKNOWN:
     default:
         return -1;
     }
 }
 
-const char *tokenize(char *command) {
+static const char *tokenize(char *command) {
     static char *read = nullptr;
     static char *token = nullptr;
     static char *write = nullptr;
@@ -96,11 +85,11 @@ const char *tokenize(char *command) {
         return nullptr;
     }
 
-    enum tokenizer_state state = NORMAL;
+    enum tokenizer_state state = STATE_NORMAL;
 
     while (*read != '\0') {
         switch (state) {
-        case NORMAL:
+        case STATE_NORMAL:
             if (*read == ' ') {
                 *write = '\0';
                 ++read;
@@ -108,33 +97,33 @@ const char *tokenize(char *command) {
             }
 
             if (*read == '\'') {
-                state = SIMPLE_QUOTE;
+                state = STATE_SIMPLE_QUOTE;
                 ++read;
                 continue;
             } else if (*read == '\"') {
-                state = DOUBLE_QUOTE;
+                state = STATE_DOUBLE_QUOTE;
                 ++read;
                 continue;
             } else if (*read == '\\') {
-                state = BACKSLASH;
+                state = STATE_BACKSLASH;
             }
             break;
-        case SIMPLE_QUOTE:
+        case STATE_SIMPLE_QUOTE:
             if (*read == '\'') {
-                state = NORMAL;
+                state = STATE_NORMAL;
                 ++read;
                 continue;
             }
             break;
-        case DOUBLE_QUOTE:
+        case STATE_DOUBLE_QUOTE:
             if (*read == '\"') {
-                state = NORMAL;
+                state = STATE_NORMAL;
                 ++read;
                 continue;
             }
             break;
-        case BACKSLASH:
-            state = NORMAL;
+        case STATE_BACKSLASH:
+            state = STATE_NORMAL;
             break;
         }
         *write = *read;
@@ -146,21 +135,53 @@ const char *tokenize(char *command) {
     return token;
 }
 
-enum command_type get_cmd_type(const char *cmd) {
-    if (strcmp(cmd, "exit") == 0) {
-        return BUILTIN_EXIT;
-    }
-    if (strcmp(cmd, "echo") == 0) {
-        return BUILTIN_ECHO;
-    }
-    if (strcmp(cmd, "type") == 0) {
-        return BUILTIN_TYPE;
+static enum command_type get_cmd_type(const char *cmd) {
+    static const struct builtin_map builtin_cmds[] = {
+        {"exit", CMD_BUILTIN_EXIT}, {"echo", CMD_BUILTIN_ECHO}, {"type", CMD_BUILTIN_TYPE}};
+    for (int i = 0; i < sizeof(builtin_cmds) / sizeof(struct builtin_map); ++i) {
+        if (strcmp(cmd, builtin_cmds[i].cmd) == 0) {
+            return builtin_cmds[i].type;
+        }
     }
     if (in_path(cmd)) {
-        return EXECUTABLE;
+        return CMD_EXECUTABLE;
     }
 
-    return UNKNOWN;
+    return CMD_UNKNOWN;
 }
 
-bool in_path(const char *cmd) { return false; }
+static bool in_path(const char *cmd) { return false; }
+
+static int echo(const char *arg) {
+    if ((arg = tokenize(nullptr)) == nullptr) {
+        printf("\n");
+        return 0;
+    }
+    printf("%s", arg);
+    while ((arg = tokenize(nullptr)) != nullptr) {
+        printf(" %s", arg);
+    }
+    printf("\n");
+    return 0;
+}
+
+static void type(const char *arg) {
+    while ((arg = tokenize(nullptr)) != nullptr) {
+        const char *message;
+        switch (get_cmd_type(arg)) {
+        case CMD_BUILTIN_EXIT:
+        case CMD_BUILTIN_ECHO:
+        case CMD_BUILTIN_TYPE:
+            message = " is a shell builtin";
+            break;
+        case CMD_EXECUTABLE:
+            message = " is an executable file";
+            break;
+        case CMD_UNKNOWN:
+            message = ": not found";
+            break;
+        }
+
+        printf("%s%s\n", arg, message);
+    }
+}
