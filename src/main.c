@@ -2,9 +2,12 @@
 #include <string.h>
 
 enum tokenizer_state { NORMAL = 0, SIMPLE_QUOTE, DOUBLE_QUOTE, BACKSLASH };
+enum command_type { BUILTIN_EXIT, BUILTIN_ECHO, BUILTIN_TYPE, EXECUTABLE, UNKNOWN };
 
-int handle_command(char *command);
+bool in_path(const char *cmd);
 const char *tokenize(char *command);
+enum command_type get_cmd_type(const char *cmd);
+int handle_command(char *command);
 
 int main(int argc, char *argv[]) {
     // Flush after every printf
@@ -31,9 +34,10 @@ int handle_command(char *command) {
     if ((token = tokenize(command)) == nullptr) {
         return 0;
     }
-    if (strcmp(command, "exit") == 0) {
+    switch (get_cmd_type(token)) {
+    case BUILTIN_EXIT:
         return 1;
-    } else if (strcmp(token, "echo") == 0) {
+    case BUILTIN_ECHO:
         if ((token = tokenize(nullptr)) == nullptr) {
             printf("\n");
             return 0;
@@ -44,8 +48,31 @@ int handle_command(char *command) {
         }
         printf("\n");
         return 0;
+    case BUILTIN_TYPE:
+        while ((token = tokenize(nullptr)) != nullptr) {
+            const char *message;
+            switch (get_cmd_type(token)) {
+            case BUILTIN_EXIT:
+            case BUILTIN_ECHO:
+            case BUILTIN_TYPE:
+                message = " is a shell builtin";
+                break;
+            case EXECUTABLE:
+                message = " is an executable file";
+                break;
+            case UNKNOWN:
+                message = ": not found";
+                break;
+            }
+
+            printf("%s%s\n", token, message);
+        }
+    case EXECUTABLE:
+        return 0;
+    case UNKNOWN:
+    default:
+        return -1;
     }
-    return -1;
 }
 
 const char *tokenize(char *command) {
@@ -118,3 +145,22 @@ const char *tokenize(char *command) {
 
     return token;
 }
+
+enum command_type get_cmd_type(const char *cmd) {
+    if (strcmp(cmd, "exit") == 0) {
+        return BUILTIN_EXIT;
+    }
+    if (strcmp(cmd, "echo") == 0) {
+        return BUILTIN_ECHO;
+    }
+    if (strcmp(cmd, "type") == 0) {
+        return BUILTIN_TYPE;
+    }
+    if (in_path(cmd)) {
+        return EXECUTABLE;
+    }
+
+    return UNKNOWN;
+}
+
+bool in_path(const char *cmd) { return false; }
