@@ -20,7 +20,7 @@ static const char *tokenize(char *command);
 static enum command_type get_cmd_type(const char *cmd);
 static int handle_command(char *command);
 static int echo(const char *arg);
-static void type(const char *arg);
+static int type(const char *arg);
 
 int main(int argc, char *argv[]) {
     // Flush after every printf
@@ -165,7 +165,7 @@ static int echo(const char *arg) {
     return 0;
 }
 
-static void type(const char *arg) {
+static int type(const char *arg) {
     while ((arg = tokenize(nullptr)) != nullptr) {
         const char *message;
         switch (get_cmd_type(arg)) {
@@ -184,4 +184,5 @@ static void type(const char *arg) {
 
         printf("%s%s\n", arg, message);
     }
+    return 0;
 }
