@@ -166,7 +166,6 @@ static enum command_type get_cmd_type(const char *cmd, char *full_path) {
 static bool in_dir(const char *dir_path, const char *cmd, char *full_path) {
     DIR *dir = opendir(dir_path);
     if (dir == NULL) {
-        closedir(dir);
         return false;
     }
     struct dirent *entry;
@@ -225,7 +224,6 @@ static int echo(const char *arg) {
 
 static int type(const char *cmd) {
     while ((cmd = tokenize(NULL)) != NULL) {
-        char message[BUFSIZ];
         char full_path[BUFSIZ];
         switch (get_cmd_type(cmd, full_path)) {
         case CMD_BUILTIN_EXIT:
