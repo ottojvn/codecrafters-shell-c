@@ -198,7 +198,7 @@ static bool in_path(const char *cmd, char *full_path) {
     char path[BUFSIZ];
     strncpy(path, path_env, BUFSIZ);
     const char *dir_path = NULL;
-    dir_path = strtok(path_env, PATH_LIST_DELIMITER);
+    dir_path = strtok(path, PATH_LIST_DELIMITER);
     if (dir_path != NULL && in_dir(dir_path, cmd, full_path)) {
         return true;
     }
