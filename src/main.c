@@ -4,6 +4,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #ifdef _WIN32
 const char *PATH_LIST_DELIMITER = ";";
@@ -28,13 +30,14 @@ struct builtin_map {
 };
 
 static bool in_path(const char *cmd, char *full_path);
-static const char *tokenize(char *command);
+static char *tokenize(char *command);
 static enum command_type get_cmd_type(const char *cmd, char *full_path);
 static int handle_command(char *command);
 static int echo(const char *arg);
-static int type(const char *arg);
+static int type(const char *cmd);
+static int execute(const char *cmd_path, char *arg0);
 
-int main(int argc, char *argv[]) {
+int main(void) {
     // Flush after every printf
     setbuf(stdout, NULL);
 
@@ -45,8 +48,8 @@ int main(int argc, char *argv[]) {
             break;
         }
         input_line[strcspn(input_line, "\n")] = '\0';
-        int ret;
-        if ((ret = handle_command(input_line)) == -1) {
+        int ret = handle_command(input_line);
+        if (ret == -1) {
             printf("%s: command not found\n", input_line);
         } else if (ret == 1) {
             break;
@@ -57,8 +60,8 @@ int main(int argc, char *argv[]) {
 }
 
 static int handle_command(char *command) {
-    const char *token;
-    if ((token = tokenize(command)) == NULL) {
+    const char *token = tokenize(command);
+    if (token == NULL) {
         return 0;
     }
     char full_path[BUFSIZ];
@@ -70,14 +73,14 @@ static int handle_command(char *command) {
     case CMD_BUILTIN_TYPE:
         return type(token);
     case CMD_EXECUTABLE:
-        return 0;
+        return execute(full_path, (char *)token);
     case CMD_UNKNOWN:
     default:
         return -1;
     }
 }
 
-static const char *tokenize(char *command) {
+static char *tokenize(char *command) {
     static char *read = NULL;
     static char *token = NULL;
     static char *write = NULL;
@@ -113,11 +116,13 @@ static const char *tokenize(char *command) {
                 state = STATE_SIMPLE_QUOTE;
                 ++read;
                 continue;
-            } else if (*read == '\"') {
+            }
+            if (*read == '\"') {
                 state = STATE_DOUBLE_QUOTE;
                 ++read;
                 continue;
-            } else if (*read == '\\') {
+            }
+            if (*read == '\\') {
                 state = STATE_BACKSLASH;
             }
             break;
@@ -198,7 +203,7 @@ static bool in_path(const char *cmd, char *full_path) {
     strncpy(path, path_env, BUFSIZ);
     const char *dir_path = NULL;
     dir_path = strtok(path, PATH_LIST_DELIMITER);
-    if (dir_path != NULL && in_dir(dir_path, cmd, full_path)) {
+    if (dir_path != NULL && (int)(in_dir(dir_path, cmd, full_path))) {
         return true;
     }
     while ((dir_path = strtok(NULL, PATH_LIST_DELIMITER)) != NULL) {
@@ -210,7 +215,8 @@ static bool in_path(const char *cmd, char *full_path) {
 }
 
 static int echo(const char *arg) {
-    if ((arg = tokenize(NULL)) == NULL) {
+    arg = tokenize(NULL);
+    if (arg == NULL) {
         printf("\n");
         return 0;
     }
@@ -240,4 +246,34 @@ static int type(const char *cmd) {
         }
     }
     return 0;
+}
+
+static int get_args(char **args) {
+    int i = 1;
+    while ((args[i++] = tokenize(NULL)) != NULL) {
+        ;
+    }
+
+    return 0;
+}
+
+static int execute(const char *cmd_path, char *arg0) {
+    pid_t child = fork();
+    char *args[4096];
+    args[0] = arg0;
+    switch (child) {
+    case -1:
+        perror("fork");
+        exit(EXIT_FAILURE);
+    case 0:
+        get_args(args);
+        execvp(cmd_path, (char *const *)args);
+        if (fflush(stdout) < 0) {
+            perror("fflush");
+        }
+        _exit(EXIT_SUCCESS);
+    default:
+        waitpid(child, NULL, 0);
+        return 0;
+    }
 }
