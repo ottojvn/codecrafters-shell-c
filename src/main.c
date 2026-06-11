@@ -175,7 +175,7 @@ static bool in_dir(const char *dir_path, const char *cmd, char *full_path) {
             continue;
         }
 
-        if (snprintf(full_path, BUFSIZ, "%s%c%s", dir_path, DIR_DELIMITER, cmd) < 0) {
+        if (snprintf(full_path, BUFSIZ, "%s%s%s", dir_path, DIR_DELIMITER, cmd) < 0) {
             perror("snprintf");
             continue;
         }
