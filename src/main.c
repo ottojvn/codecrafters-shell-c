@@ -166,6 +166,7 @@ static enum command_type get_cmd_type(const char *cmd, char *full_path) {
 static bool in_dir(const char *dir_path, const char *cmd, char *full_path) {
     DIR *dir = opendir(dir_path);
     if (dir == NULL) {
+        closedir(dir);
         return false;
     }
     struct dirent *entry;
@@ -184,14 +185,18 @@ static bool in_dir(const char *dir_path, const char *cmd, char *full_path) {
         struct stat file_stat;
         if (stat(full_path, &file_stat) == 0 &&                            // got file stat
             (S_ISREG(file_stat.st_mode) && file_stat.st_mode & S_IXUSR)) { // is executable
+            closedir(dir);
             return true;
         }
     }
+    closedir(dir);
     return false;
 }
 
 static bool in_path(const char *cmd, char *full_path) {
     char *path_env = getenv("PATH");
+    char path[BUFSIZ];
+    strncpy(path, path_env, BUFSIZ);
     const char *dir_path = NULL;
     dir_path = strtok(path_env, PATH_LIST_DELIMITER);
     if (dir_path != NULL && in_dir(dir_path, cmd, full_path)) {
