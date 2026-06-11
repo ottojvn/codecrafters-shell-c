@@ -6,11 +6,11 @@
 #include <sys/types.h>
 
 #ifdef _WIN32
-const char PATH_LIST_DELIMITER = ';';
-const char DIR_DELIMITER = '\\';
+const char *PATH_LIST_DELIMITER = ";";
+const char *DIR_DELIMITER = "\\";
 #else
-const char PATH_LIST_DELIMITER = ':';
-const char DIR_DELIMITER = '/';
+const char *PATH_LIST_DELIMITER = ":";
+const char *DIR_DELIMITER = "/";
 #endif
 
 enum tokenizer_state { STATE_NORMAL = 0, STATE_SIMPLE_QUOTE, STATE_DOUBLE_QUOTE, STATE_BACKSLASH };
@@ -193,7 +193,11 @@ static bool in_dir(const char *dir_path, const char *cmd, char *full_path) {
 static bool in_path(const char *cmd, char *full_path) {
     char *path_env = getenv("PATH");
     const char *dir_path = NULL;
-    while ((dir_path = strtok(path_env, &PATH_LIST_DELIMITER)) != NULL) {
+    dir_path = strtok(path_env, PATH_LIST_DELIMITER);
+    if (dir_path != NULL && in_dir(dir_path, cmd, full_path)) {
+        return true;
+    }
+    while ((dir_path = strtok(NULL, PATH_LIST_DELIMITER)) != NULL) {
         if (in_dir(dir_path, cmd, full_path)) {
             return true;
         }
@@ -214,28 +218,23 @@ static int echo(const char *arg) {
     return 0;
 }
 
-static int type(const char *arg) {
-    while ((arg = tokenize(NULL)) != NULL) {
+static int type(const char *cmd) {
+    while ((cmd = tokenize(NULL)) != NULL) {
         char message[BUFSIZ];
         char full_path[BUFSIZ];
-        switch (get_cmd_type(arg, full_path)) {
+        switch (get_cmd_type(cmd, full_path)) {
         case CMD_BUILTIN_EXIT:
         case CMD_BUILTIN_ECHO:
         case CMD_BUILTIN_TYPE:
-            message = " is a shell builtin";
+            printf("%s is a shell builtin\n", cmd);
             break;
         case CMD_EXECUTABLE:
-            if (snprintf(message, BUFSIZ + 3, " is %s", full_path) < 0) {
-                perror("snprintf");
-                return -2;
-            }
+            printf("%s is %s\n", cmd, full_path);
             break;
         case CMD_UNKNOWN:
-            message = ": not found";
+            printf("%s: not found\n", cmd);
             break;
         }
-
-        printf("%s%s\n", arg, message);
     }
     return 0;
 }
