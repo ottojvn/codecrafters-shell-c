@@ -216,7 +216,7 @@ static int echo(const char *arg) {
 
 static int type(const char *arg) {
     while ((arg = tokenize(NULL)) != NULL) {
-        char *message;
+        char message[BUFSIZ];
         char full_path[BUFSIZ];
         switch (get_cmd_type(arg, full_path)) {
         case CMD_BUILTIN_EXIT:
