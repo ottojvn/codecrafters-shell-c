@@ -25,7 +25,7 @@ builtin_func_t get_builtin_func(const char *cmd) {
 int builtin_exit(const char **argv) { return SHELL_CMD_EXIT; }
 
 int echo(const char **argv) {
-    if (*argv != NULL) {
+    if (*(++argv) != NULL) {
         printf("%s", *argv);
     }
     while (*(++argv) != NULL) {
