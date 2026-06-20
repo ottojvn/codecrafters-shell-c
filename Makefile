@@ -129,6 +129,30 @@ shell/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/shell.dir/build.make CMakeFiles/shell.dir/build
 .PHONY : shell/fast
 
+src/builtin.o: src/builtin.c.o
+.PHONY : src/builtin.o
+
+# target to build an object file
+src/builtin.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shell.dir/build.make CMakeFiles/shell.dir/src/builtin.c.o
+.PHONY : src/builtin.c.o
+
+src/builtin.i: src/builtin.c.i
+.PHONY : src/builtin.i
+
+# target to preprocess a source file
+src/builtin.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shell.dir/build.make CMakeFiles/shell.dir/src/builtin.c.i
+.PHONY : src/builtin.c.i
+
+src/builtin.s: src/builtin.c.s
+.PHONY : src/builtin.s
+
+# target to generate assembly for a file
+src/builtin.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shell.dir/build.make CMakeFiles/shell.dir/src/builtin.c.s
+.PHONY : src/builtin.c.s
+
 src/main.o: src/main.c.o
 .PHONY : src/main.o
 
@@ -153,6 +177,54 @@ src/main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/shell.dir/build.make CMakeFiles/shell.dir/src/main.c.s
 .PHONY : src/main.c.s
 
+src/parse.o: src/parse.c.o
+.PHONY : src/parse.o
+
+# target to build an object file
+src/parse.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shell.dir/build.make CMakeFiles/shell.dir/src/parse.c.o
+.PHONY : src/parse.c.o
+
+src/parse.i: src/parse.c.i
+.PHONY : src/parse.i
+
+# target to preprocess a source file
+src/parse.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shell.dir/build.make CMakeFiles/shell.dir/src/parse.c.i
+.PHONY : src/parse.c.i
+
+src/parse.s: src/parse.c.s
+.PHONY : src/parse.s
+
+# target to generate assembly for a file
+src/parse.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shell.dir/build.make CMakeFiles/shell.dir/src/parse.c.s
+.PHONY : src/parse.c.s
+
+src/process.o: src/process.c.o
+.PHONY : src/process.o
+
+# target to build an object file
+src/process.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shell.dir/build.make CMakeFiles/shell.dir/src/process.c.o
+.PHONY : src/process.c.o
+
+src/process.i: src/process.c.i
+.PHONY : src/process.i
+
+# target to preprocess a source file
+src/process.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shell.dir/build.make CMakeFiles/shell.dir/src/process.c.i
+.PHONY : src/process.c.i
+
+src/process.s: src/process.c.s
+.PHONY : src/process.s
+
+# target to generate assembly for a file
+src/process.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shell.dir/build.make CMakeFiles/shell.dir/src/process.c.s
+.PHONY : src/process.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -162,9 +234,18 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... shell"
+	@echo "... src/builtin.o"
+	@echo "... src/builtin.i"
+	@echo "... src/builtin.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/parse.o"
+	@echo "... src/parse.i"
+	@echo "... src/parse.s"
+	@echo "... src/process.o"
+	@echo "... src/process.i"
+	@echo "... src/process.s"
 .PHONY : help
 
 

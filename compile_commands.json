@@ -1,8 +1,26 @@
 [
 {
   "directory": "/home/ottojvn/Projetos/codecrafters-shell-c",
-  "command": "/usr/bin/cc   -std=gnu2x -o CMakeFiles/shell.dir/src/main.c.o -c /home/ottojvn/Projetos/codecrafters-shell-c/src/main.c",
+  "command": "/usr/bin/cc   -g -std=gnu2x -o CMakeFiles/shell.dir/src/builtin.c.o -c /home/ottojvn/Projetos/codecrafters-shell-c/src/builtin.c",
+  "file": "/home/ottojvn/Projetos/codecrafters-shell-c/src/builtin.c",
+  "output": "CMakeFiles/shell.dir/src/builtin.c.o"
+},
+{
+  "directory": "/home/ottojvn/Projetos/codecrafters-shell-c",
+  "command": "/usr/bin/cc   -g -std=gnu2x -o CMakeFiles/shell.dir/src/main.c.o -c /home/ottojvn/Projetos/codecrafters-shell-c/src/main.c",
   "file": "/home/ottojvn/Projetos/codecrafters-shell-c/src/main.c",
   "output": "CMakeFiles/shell.dir/src/main.c.o"
+},
+{
+  "directory": "/home/ottojvn/Projetos/codecrafters-shell-c",
+  "command": "/usr/bin/cc   -g -std=gnu2x -o CMakeFiles/shell.dir/src/parse.c.o -c /home/ottojvn/Projetos/codecrafters-shell-c/src/parse.c",
+  "file": "/home/ottojvn/Projetos/codecrafters-shell-c/src/parse.c",
+  "output": "CMakeFiles/shell.dir/src/parse.c.o"
+},
+{
+  "directory": "/home/ottojvn/Projetos/codecrafters-shell-c",
+  "command": "/usr/bin/cc   -g -std=gnu2x -o CMakeFiles/shell.dir/src/process.c.o -c /home/ottojvn/Projetos/codecrafters-shell-c/src/process.c",
+  "file": "/home/ottojvn/Projetos/codecrafters-shell-c/src/process.c",
+  "output": "CMakeFiles/shell.dir/src/process.c.o"
 }
 ]

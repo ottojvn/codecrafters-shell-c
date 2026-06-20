@@ -8,7 +8,10 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/ottojvn/Projetos/codecrafters-shell-c/src/builtin.c" "CMakeFiles/shell.dir/src/builtin.c.o" "gcc" "CMakeFiles/shell.dir/src/builtin.c.o.d"
   "/home/ottojvn/Projetos/codecrafters-shell-c/src/main.c" "CMakeFiles/shell.dir/src/main.c.o" "gcc" "CMakeFiles/shell.dir/src/main.c.o.d"
+  "/home/ottojvn/Projetos/codecrafters-shell-c/src/parse.c" "CMakeFiles/shell.dir/src/parse.c.o" "gcc" "CMakeFiles/shell.dir/src/parse.c.o.d"
+  "/home/ottojvn/Projetos/codecrafters-shell-c/src/process.c" "CMakeFiles/shell.dir/src/process.c.o" "gcc" "CMakeFiles/shell.dir/src/process.c.o.d"
   "" "shell" "gcc" "CMakeFiles/shell.dir/link.d"
   )
 
